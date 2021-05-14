@@ -20,14 +20,23 @@
               />
             </div>
             <div class="form-group">
-              <input
-                v-model="links[0].url"
-                type="url"
+              <select id="sltGroup" class="form-control form-control-lg" v-model="category" required>
+                <option value>-- SELECIONA CATEGORIA --</option>
+                <option value="institucional">Institucional</option>
+                <option value="tematico">Temático</option>
+                <option value="promocional">Promocional</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <textarea
+                id="txtDescription"
                 class="form-control form-control-lg"
-                id="txtPhoto"
-                placeholder="escreve link para foto"
+                placeholder="escreve descrição"
+                cols="30"
+                rows="10"
+                v-model="description"
                 required
-              />
+              ></textarea>
             </div>
             <button type="submit" class="btn btn-outline-success btn-lg mr-2">
               <i class="fas fa-plus-square"></i>  ADICIONAR</button>
@@ -45,7 +54,10 @@
 </template>
 
 <script>
+import { ADD_SPONSOR } from "@/store/sponsors/sponsor.constants";
 import HeaderPage from "@/components/HeaderPage.vue";
+import router from "@/router";
+import { mapGetters } from "vuex";
 
 export default {
   name: "AddSponsor",
@@ -55,10 +67,27 @@ export default {
   data: () => {
     return {
       name: "",
-      links: [
-        { types: "photo", url: "" },
-      ],
+      category: "",
+      description: "",
+      evaluation: [],
+      comments: []
     };
   },
+  computed: {
+    ...mapGetters("sponsor", ["getMessage"])
+  },
+  methods: {
+    add() {
+      this.$store.dispatch(`sponsor/${ADD_SPONSOR}`, this.$data).then(
+        () => {
+          this.$alert(this.getMessage, "Sponsor adicionado!", "success");
+          router.push({ name: "listSponsors" });
+        },
+        err => {
+          this.$alert(`${err.message}`, "Erro", "error");
+        }
+      );
+    }
+  }
 };
 </script>

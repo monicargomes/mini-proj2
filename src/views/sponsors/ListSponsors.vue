@@ -35,25 +35,25 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="sponsor of sponsors" :key="sponsor._id">
+              <tr v-for="sponsor of sponsors" :key="sponsor.id">
                 <td class="pt-4">{{sponsor.name}}</td>
                 <td>
                   <router-link
-                    :to="{name:'editSponsor', params:{sponsorId: sponsor._id}}"
+                    :to="{name:'editSponsor', params:{sponsorId: sponsor.id}}"
                     tag="button"
                     class="btn btn-outline-success mr-2 mt-2"
                   >
                     <i class="fas fa-edit"></i> EDITAR
                   </router-link>
                   <button
-                    @click="viewSponsor(sponsor._id)"
+                    @click="viewSponsor(sponsor.id)"
                     type="button"
                     class="btn btn-outline-success mr-2 mt-2"
                   >
                     <i class="fas fa-search"></i> VER
                   </button>
                   <button
-                    @click="removeSponsor(sponsor._id)"
+                    @click="removeSponsor(sponsor.id)"
                     type="button"
                     class="btn btn-outline-danger mr-2 mt-2"
                   >
@@ -71,7 +71,9 @@
 </template>
 
 <script>
+import { FETCH_SPONSORS, REMOVE_SPONSOR } from "@/store/sponsors/sponsor.constants";
 import HeaderPage from "@/components/HeaderPage.vue";
+import { mapGetters } from "vuex";
 
 export default {
   name: "ManageSponsors",
@@ -83,6 +85,67 @@ export default {
       sponsors: [],
       sortType: 1
     };
+  },
+  computed: {
+    ...mapGetters("sponsor", ["getSponsors", "getMessage"])
+  },
+  methods: {
+    fetchSponsors() {
+      this.$store.dispatch(`sponsor/${FETCH_SPONSORS}`).then(
+        () => {
+          this.sponsors = this.getSponsors;
+        },
+        err => {
+          this.$alert(`${err.message}`, "Erro", "error");
+        }
+      );
+    },
+    sort() {
+      this.sponsors.sort(this.compareNames);
+      this.sortType *= -1;
+    },
+    compareNames(u1, u2) {
+      if (u1.name > u2.name) return 1 * this.sortType;
+      else if (u1.name < u2.name) return -1 * this.sortType;
+      else return 0;
+    },
+
+    viewSponsor(id) {
+      const sponsor = this.sponsors.find(sponsor => sponsor.id === id);
+
+      this.$fire({
+        title: sponsor.name,
+        html: this.generateTemplate(sponsor)
+      });
+    },
+
+    generateTemplate(sponsor) {
+      return `
+          <h4>${sponsor.category}</h4>
+          <p>${sponsor.description}</p> 
+        `;
+    },
+    removeSponsor(id) {
+      this.$confirm(
+        "Se sim, clique em OK",
+        "Deseja mesmo remover o sponsor?",
+        "warning",
+        { confirmButtonText: "OK", cancelButtonText: "Cancelar" }
+      ).then(
+        () => {
+          this.$store.dispatch(`sponsor/${REMOVE_SPONSOR}`, id).then(() => {
+            this.$alert(this.getMessage, "Sponsor removido!", "success");
+            this.fetchSponsors();
+          });
+        },
+        () => {
+          this.$alert("Remoção cancelada!", "Informação", "info");
+        }
+      );
+    }
+  },
+  created() {
+    this.fetchSponsors();
   }
 };
 </script>

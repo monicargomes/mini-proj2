@@ -19,14 +19,23 @@
               />
             </div>
             <div class="form-group">
-              <input
-                v-model="sponsor.links[0].url"
-                type="url"
+              <select id="sltGroup" class="form-control form-control-lg" v-model="sponsor.category" required>
+                <option value>-- SELECIONA CATEGORIA --</option>
+                <option value="institucional">Institucional</option>
+                <option value="tematico">Temático</option>
+                <option value="promocional">Promocional</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <textarea
+                id="txtDescription"
                 class="form-control form-control-lg"
-                id="txtPhoto"
-                placeholder="escreve link para foto"
+                placeholder="escreve descrição"
+                cols="30"
+                rows="10"
+                v-model="sponsor.description"
                 required
-              />
+              ></textarea>
             </div>
             <button type="button" class="btn btn-outline-success btn-lg mr-2" @click="removeComments()">
               <i class="fas fa-edit"></i> REMOVER COMENTÁRIOS
@@ -50,7 +59,10 @@
 </template>
 
 <script>
+import { EDIT_SPONSOR } from "@/store/sponsors/sponsor.constants";
 import HeaderPage from "@/components/HeaderPage.vue";
+import router from "@/router";
+import { mapGetters } from "vuex";
 
 export default {
   name: "EditSponsor",
@@ -62,6 +74,29 @@ export default {
       sponsor: {}
     };
   },
+  computed: {
+    ...mapGetters("sponsor", ["getSponsorsById", "getMessage"])
+  },
+  methods: {
+    removeComments() {
+      this.sponsor.comments.length = 0
+      this.$alert("Comentários removidos, clique em atualizar!", "Comentários!", "success");
+    },
+    update() {
+      this.$store.dispatch(`sponsor/${EDIT_SPONSOR}`, this.$data.sponsor).then(
+        () => {
+          this.$alert(this.getMessage, "Sponsor atualizado!", "success");
+          router.push({ name: "listSponsors" });
+        },
+        err => {
+          this.$alert(`${err.message}`, "Erro", "error");
+        }
+      );
+    }
+  },
+  created() {
+    this.sponsor = this.getSponsorsById(this.$route.params.sponsorId);
+  }
 };
 </script>
 

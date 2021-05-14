@@ -39,21 +39,21 @@
                 <td class="pt-4">{{expert.name}}</td>
                 <td>
                   <router-link
-                    :to="{name:'editExpert', params:{expertId: expert._id}}"
+                    :to="{name:'editExpert', params:{expertId: expert.id}}"
                     tag="button"
                     class="btn btn-outline-success mr-2 mt-2"
                   >
                     <i class="fas fa-edit"></i> EDITAR
                   </router-link>
                   <button
-                    @click="viewExpert(expert._id)"
+                    @click="viewExpert(expert.id)"
                     type="button"
                     class="btn btn-outline-success mr-2 mt-2"
                   >
                     <i class="fas fa-search"></i> VER
                   </button>
                   <button
-                    @click="removeExpert(expert._id)"
+                    @click="removeExpert(expert.id)"
                     type="button"
                     class="btn btn-outline-danger mr-2 mt-2"
                   >
@@ -71,7 +71,9 @@
 </template>
 
 <script>
+import { FETCH_EXPERTS, REMOVE_EXPERT } from "@/store/experts/expert.constants";
 import HeaderPage from "@/components/HeaderPage.vue";
+import { mapGetters } from "vuex";
 
 export default {
   name: "ManageExperts",
@@ -83,6 +85,68 @@ export default {
       experts: [],
       sortType: 1
     };
+  },
+  computed: {
+    ...mapGetters("expert", ["getExperts", "getMessage"])
+  },
+  methods: {
+    fetchExperts() {
+      this.$store.dispatch(`expert/${FETCH_EXPERTS}`).then(
+        () => {
+          this.experts = this.getExperts;
+        },
+        err => {
+          this.$alert(`${err.message}`, "Erro", "error");
+        }
+      );
+    },
+    sort() {
+      this.experts.sort(this.compareNames);
+      this.sortType *= -1;
+    },
+    compareNames(u1, u2) {
+      if (u1.name > u2.name) return 1 * this.sortType;
+      else if (u1.name < u2.name) return -1 * this.sortType;
+      else return 0;
+    },
+
+    viewExpert(id) {
+      const expert = this.experts.find(expert => expert.id === id);
+
+      this.$fire({
+        title: expert.name,
+        html: this.generateTemplate(expert)
+      });
+    },
+
+    generateTemplate(expert) {
+      return `
+          <h4>${expert.job}</h4>
+          <p>Área de experiência: ${expert.expertise}</p> 
+          <p>${expert.description}</p> 
+        `;
+    },
+    removeExpert(id) {
+      this.$confirm(
+        "Se sim, clique em OK",
+        "Deseja mesmo remover o expert?",
+        "warning",
+        { confirmButtonText: "OK", cancelButtonText: "Cancelar" }
+      ).then(
+        () => {
+          this.$store.dispatch(`expert/${REMOVE_EXPERT}`, id).then(() => {
+            this.$alert(this.getMessage, "Expert removido!", "success");
+            this.fetchExperts();
+          });
+        },
+        () => {
+          this.$alert("Remoção cancelada!", "Informação", "info");
+        }
+      );
+    }
+  },
+  created() {
+    this.fetchExperts();
   }
 };
 </script>

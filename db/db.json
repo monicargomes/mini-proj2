@@ -53,6 +53,27 @@
       "active": true
     }
   ],
+  "experts": [
+    {
+      "name": "Maria Goulart",
+      "job": "Bióloga",
+      "description": "Maria tem 10 anos de experiência no estudo dos felinos, principalmente para a preservação de espécies de pequeno porte ameaçadas de extinção.",
+      "expertise": "mamifero",
+      "evaluation": [],
+      "comments": [],
+      "id": 1
+    }
+  ],
+  "sponsors": [
+    {
+      "name": "Purina",
+      "category": "promocional",
+      "description": "Marca de ração para cães e gatos",
+      "evaluation": [],
+      "comments": [],
+      "id": 1
+    }
+  ],
   "login": {
     "token": "12345",
     "user": {
